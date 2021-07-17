@@ -65,7 +65,7 @@ in runCommand drvName {
     description = "QQ Linux版-从心出发·趣无止境";
     license = licenses.unfree;
     platforms = [ "x86_64-linux" ];
-    maintainers = [ Hentioe ];
+    maintainers = [ "Hentioe" ];
   };
 } ''
   mkdir -p $out/{bin,share/tencent-qq}

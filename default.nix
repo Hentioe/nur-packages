@@ -15,7 +15,4 @@
   overlays = import ./overlays; # nixpkgs overlays
 
   linuxqq = pkgs.callPackage ./pkgs/linuxqq { };
-  master-pdf-editor = pkgs.callPackage ./pkgs/master-pdf-editor { };
-  # some-qt5-package = pkgs.libsForQt5.callPackage ./pkgs/some-qt5-package { };
-  # ...
 }
