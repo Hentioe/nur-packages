@@ -1,4 +1,4 @@
-{ stdenv, lib, fetchurl, autoPatchelfHook, unzip }:
+{ stdenv, lib, fetchurl, unzip, autoPatchelfHook }:
 stdenv.mkDerivation rec {
   name = "${pName}-${version}";
   version = "1.2.0";
@@ -9,9 +9,7 @@ stdenv.mkDerivation rec {
     sha256 = "6f759c09c84249566c47c5ab2b2001f581b3221509b9ca8606e6b80bedccaae7";
   };
 
-  nativeBuildInputs = [ autoPatchelfHook ];
-
-  buildInputs = [ unzip ];
+  nativeBuildInputs = [ unzip autoPatchelfHook ];
 
   sourceRoot = ".";
 
