@@ -15,4 +15,5 @@
   overlays = import ./overlays; # nixpkgs overlays
 
   linuxqq = pkgs.callPackage ./pkgs/linuxqq { };
+  besttrace = pkgs.callPackage ./pkgs/besttrace { };
 }
