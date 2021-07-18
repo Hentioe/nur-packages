@@ -16,4 +16,5 @@
 
   linuxqq = pkgs.callPackage ./pkgs/linuxqq { };
   besttrace = pkgs.callPackage ./pkgs/besttrace { };
+  dart = pkgs.callPackage ./pkgs/dart { };
 }
