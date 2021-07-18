@@ -2,12 +2,12 @@
 , makeDesktopItem, runCommand, xlibs, glib, gnome2, cairo, gdk-pixbuf, nss_3_53
 , nspr }:
 let
-  drvName = "linuxqq-${version}";
+  drvName = "linux${pName}-${version}";
   version = "2.0.0-b2";
+  pName = "qq";
 
   linuxqq = stdenv.mkDerivation rec {
     name = "${drvName}-unwrapped";
-
     fileName = "linuxqq_${version}-1089_amd64.deb";
 
     src = fetchurl {
@@ -47,7 +47,7 @@ let
     name = "${drvName}-fhs-env";
     multiPkgs = pkgs:
       [
-        (runCommand "qq-share" { } ''
+        (runCommand "${drvName}-share" { } ''
           mkdir -p $out/share
           ln -s ${linuxqq}/share/tencent-qq $out/share/tencent-qq
         '')
@@ -57,7 +57,7 @@ let
 in runCommand drvName {
   startScript = ''
     #!${fhsEnv}/bin/${drvName}-fhs-env
-    ${linuxqq}/bin/qq
+    ${linuxqq}/bin/${pName}
   '';
 
   meta = with lib; {
@@ -70,8 +70,8 @@ in runCommand drvName {
 } ''
   mkdir -p $out/{bin,share/tencent-qq}
 
-  echo -n "$startScript" > $out/bin/qq
-  chmod +x $out/bin/qq
+  echo -n "$startScript" > $out/bin/${pName}
+  chmod +x $out/bin/${pName}
 
   # fix the path in the desktop file
   cp -R \
