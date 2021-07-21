@@ -43,11 +43,11 @@ let
     '';
   };
 
-  fhsEnv = buildFHSUserEnv {
+  fhsEnv = buildFHSUserEnv rec {
     name = "${drvName}-fhs-env";
     multiPkgs = pkgs:
       [
-        (runCommand "${drvName}-share" { } ''
+        (runCommand "${name}-share" { } ''
           mkdir -p $out/share
           ln -s ${linuxqq}/share/tencent-qq $out/share/tencent-qq
         '')
