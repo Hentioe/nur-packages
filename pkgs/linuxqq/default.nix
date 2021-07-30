@@ -16,10 +16,9 @@ let
         "f8e96b0fa3a09f7d36385a446ddfd86b173cf1cef1eb0f40493250538807c52c";
     };
 
-    nativeBuildInputs = [ autoPatchelfHook ];
+    nativeBuildInputs = [ autoPatchelfHook dpkg ];
 
     buildInputs = [
-      dpkg
       xlibs.libX11
       glib
       gnome2.gtk
@@ -32,7 +31,7 @@ let
 
     sourceRoot = ".";
 
-    unpackCmd = "dpkg-deb -x ${src} .";
+    unpackCmd = "dpkg-deb -x $src .";
 
     dontConfigure = true;
     dontBuild = true;
