@@ -1,8 +1,9 @@
 { stdenv, lib, fetchurl, makeDesktopItem, copyDesktopItems, makeWrapper, unzip
-, openjdk, gradle, perl }:
+, openjdk, gradle, perl, curl, libpulseaudio, systemd, alsa-lib, flite
+, libXxf86vm }:
 
 let
-  name = "hmcl";
+  name = "hmcl-${version}";
   version = "git-javafx";
 
   src = fetchurl {
@@ -17,10 +18,20 @@ let
 
   nativeBuildInputs = [ unzip openjdk copyDesktopItems makeWrapper ];
 
+  # https://github.com/NixOS/nixpkgs/blob/8ecc61c91a596df7d3293603a9c2384190c1b89a/pkgs/games/minecraft/default.nix#L44
+  envLibPath = lib.makeLibraryPath [
+    curl
+    libpulseaudio
+    systemd
+    alsa-lib # needed for narrator
+    flite # needed for narrator
+    libXxf86vm # needed only for versions <1.13
+  ];
+
   unpackCmd = "unzip $src &> /dev/null";
 
   deps = stdenv.mkDerivation {
-    pname = "${name}-deps";
+    name = "${name}-deps";
     inherit version src unpackCmd gradlebinSrc;
 
     nativeBuildInputs = nativeBuildInputs ++ [ perl ];
@@ -29,9 +40,9 @@ let
       export GRADLE_USER_HOME=$(mktemp -d)
       substituteInPlace gradle/wrapper/gradle-wrapper.properties --replace https\\://services.gradle.org/distributions/gradle-7.0-bin.zip file://${gradlebinSrc}
 
-      echo Extract dependencies from gradle tasks...
+      echo Downloading dependencies from Gradle task...
 
-      sh ./gradlew --no-daemon --no-watch-fs &> /dev/null
+      sh ./gradlew assemble --no-daemon --no-watch-fs --parallel &> /dev/null
     '';
     # perl code mavenizes pathes (com.squareup.okio/okio/1.13.0/a9283170b7305c8d92d25aff02a6ab7e45d06cbe/okio-1.13.0.jar -> com/squareup/okio/okio/1.13.0/okio-1.13.0.jar)
     installPhase = ''
@@ -42,7 +53,7 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256:1gpb2kfrmwkj7i7krixsxdz8i7y68x9zsd16llshfas6ljl2sh92";
+    outputHash = "sha256:1r01dyvra3qgqqk9alb3wp2b7pzxl6vmp5s97q61h8a9sf27744g";
   };
 
 in stdenv.mkDerivation rec {
@@ -58,7 +69,7 @@ in stdenv.mkDerivation rec {
     substituteInPlace gradle/wrapper/gradle-wrapper.properties --replace https\\://services.gradle.org/distributions/gradle-7.0-bin.zip file://${gradlebinSrc}
 
     patch -p0 < ${patch1Src}
-    sh ./gradlew build --offline --no-daemon --no-watch-fs
+    sh ./gradlew build -x test --offline --no-daemon --no-watch-fs
   '';
 
   desktopItem = makeDesktopItem {
@@ -77,6 +88,8 @@ in stdenv.mkDerivation rec {
     cp HMCL/build/libs/HMCL-*.SNAPSHOT.jar $out/share/HMCL.jar
     install -Dm644 HMCL/src/main/resources/assets/img/icon.png $out/share/icons/hicolor/32x32/apps/hmcl.png
     makeWrapper ${openjdk}/bin/java $out/bin/hmcl \
+      --prefix LD_LIBRARY_PATH : ${envLibPath} \
+      --run "cd /tmp" \
       --add-flags "-jar $out/share/HMCL.jar"
   '';
 
