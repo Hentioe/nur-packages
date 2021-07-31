@@ -8,7 +8,7 @@
 
 { pkgs ? import <nixpkgs> { } }:
 
-{
+rec {
   # The `lib`, `modules`, and `overlay` names are special
   lib = import ./lib { inherit pkgs; }; # functions
   modules = import ./modules; # NixOS modules
@@ -17,4 +17,5 @@
   linuxqq = pkgs.callPackage ./pkgs/linuxqq { };
   besttrace = pkgs.callPackage ./pkgs/besttrace { };
   dart = pkgs.callPackage ./pkgs/dart { };
+  hmcl = pkgs.callPackage ./pkgs/hmcl { };
 }
