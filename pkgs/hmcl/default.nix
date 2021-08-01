@@ -1,14 +1,17 @@
-{ stdenv, lib, fetchurl, makeDesktopItem, copyDesktopItems, makeWrapper, unzip
-, openjdk, gradle, perl, curl, libpulseaudio, systemd, alsa-lib, flite
-, libXxf86vm }:
+{ stdenv, lib, fetchFromGitHub, fetchurl, makeDesktopItem, copyDesktopItems
+, makeWrapper, unzip, openjdk, gradle, perl, curl, libpulseaudio, systemd
+, alsa-lib, flite, libXxf86vm }:
 
 let
   name = "hmcl-${version}";
   version = "git-javafx";
 
-  src = fetchurl {
-    url = "https://github.com/huanghongxun/HMCL/archive/refs/heads/javafx.zip";
-    sha256 = "8cdb07f4868e085ac576e178417a675d99fa8739556647bd5a462c9ebcdac238";
+  src = fetchFromGitHub rec {
+    name = "github-${owner}-${repo}-${rev}";
+    owner = "huanghongxun";
+    repo = "HMCL";
+    rev = "9b6b3f8938d77f5bc2508a09d6f0ca5228fc631f";
+    sha256 = "17l288a74bs1zkvw9apzhgbajpl08zws6965saiwa223wzmlahfz";
   };
 
   gradlebinSrc = fetchurl {
@@ -28,11 +31,9 @@ let
     libXxf86vm # needed only for versions <1.13
   ];
 
-  unpackCmd = "unzip $src &> /dev/null";
-
   deps = stdenv.mkDerivation {
     name = "${name}-deps";
-    inherit version src unpackCmd gradlebinSrc;
+    inherit version src gradlebinSrc;
 
     nativeBuildInputs = nativeBuildInputs ++ [ perl ];
 
@@ -57,7 +58,7 @@ let
   };
 
 in stdenv.mkDerivation rec {
-  inherit name version src gradlebinSrc nativeBuildInputs unpackCmd;
+  inherit name version src gradlebinSrc nativeBuildInputs;
 
   patch1Src = ./fix-locate-config.patch;
 
@@ -80,18 +81,21 @@ in stdenv.mkDerivation rec {
     icon = "hmcl";
   };
 
-  desktopItems = [ desktopItem ];
-
   installPhase = ''
-    mkdir -p $out/{bin,share}
+    mkdir -p $out/{bin,share/HMCL}
 
-    cp HMCL/build/libs/HMCL-*.SNAPSHOT.jar $out/share/HMCL.jar
+    cp -R HMCL/build/libs/HMCL-*.SNAPSHOT.jar $out/share/HMCL/HMCL.jar
     install -Dm644 HMCL/src/main/resources/assets/img/icon.png $out/share/icons/hicolor/32x32/apps/hmcl.png
+
     makeWrapper ${openjdk}/bin/java $out/bin/hmcl \
       --prefix LD_LIBRARY_PATH : ${envLibPath} \
       --run "cd /tmp" \
-      --add-flags "-jar $out/share/HMCL.jar"
+      --add-flags "-jar $out/share/HMCL/HMCL.jar"
+
+    runHook postInstall
   '';
+
+  desktopItems = [ desktopItem ];
 
   meta = with lib; {
     homepage = "http://openjdk.java.net/projects/openjfx/";
